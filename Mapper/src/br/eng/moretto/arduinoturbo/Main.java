@@ -6,9 +6,14 @@ package br.eng.moretto.arduinoturbo;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.TableModel;
 import sun.util.ResourceBundleEnumeration;
 
@@ -21,9 +26,8 @@ public class Main extends javax.swing.JFrame {
     SerialTest serial;
     
     Properties props = new Properties();
-    
-    ResourceBundle msgs;
-    
+       
+    static final String MAP_FILE = "map01.properties";
     /**
      * Creates new form Main
      */
@@ -31,14 +35,12 @@ public class Main extends javax.swing.JFrame {
         initComponents();
         
         try{
-            msgs = ResourceBundle.getBundle("map01");
-            
-            
-            Enumeration<String> e = msgs.getKeys();
+            props.load(Main.class.getClassLoader().getResourceAsStream(MAP_FILE));            
+                        
+            Enumeration<Object> e = props.keys();
             while(e.hasMoreElements()){
-                mapList.add(e.nextElement());
-            }            
-                
+                mapList.add((String) e.nextElement());
+            }                            
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -63,8 +65,11 @@ public class Main extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
         loadTable = new javax.swing.JButton();
         mapList = new java.awt.List();
+        saveButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        trafficLight1.setRedOn(true);
 
         org.jdesktop.layout.GroupLayout trafficLight1Layout = new org.jdesktop.layout.GroupLayout(trafficLight1);
         trafficLight1.setLayout(trafficLight1Layout);
@@ -141,6 +146,13 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        saveButton.setText("jButton1");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -148,6 +160,7 @@ public class Main extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(saveButton)
                     .add(layout.createSequentialGroup()
                         .add(textField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 410, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -179,7 +192,9 @@ public class Main extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(loadTable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 365, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(saveButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 23, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(sendButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE)
                     .add(textField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -205,6 +220,7 @@ public class Main extends javax.swing.JFrame {
                 }
         };
         t.start();
+        trafficLight1.setRedOn(false);
         trafficLight1.setGreenOn(true);
         System.out.println("Started");
                 
@@ -212,11 +228,9 @@ public class Main extends javax.swing.JFrame {
                 
     }//GEN-LAST:event_connectSerialButtonActionPerformed
 
-    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-
-        //serial.write(textField1.getText());
-        TableModel model = jTable1.getModel();
+    private String buildStringMap(){
         
+        TableModel model = jTable1.getModel();
         StringBuilder result = new StringBuilder();
         result.append("m");
         for(int i=0 ; i < 3 ; i++){
@@ -228,8 +242,13 @@ public class Main extends javax.swing.JFrame {
             }
             result.append(";");
         }
+        return result.toString();
+    }
+    
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+
         //textField1.setText(result.toString());
-        serial.write(result.toString());
+        serial.write(buildStringMap());
         
     }//GEN-LAST:event_sendButtonActionPerformed
 
@@ -244,8 +263,7 @@ public class Main extends javax.swing.JFrame {
         
             TableModel model = jTable1.getModel();
 
-
-            String[] rows = msgs.getString(mapList.getSelectedItem()).split(";");
+            String[] rows = props.getProperty(mapList.getSelectedItem()).split(";");
 
             for(int i=0 ; i < 3 ; i++){
 
@@ -257,6 +275,32 @@ public class Main extends javax.swing.JFrame {
         
         
     }//GEN-LAST:event_loadTableActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+
+        String map = buildStringMap();
+        
+        String mapName = JOptionPane.showInputDialog ("Map name" , mapList.getSelectedItem()); 
+        
+        if(mapName != null){
+            System.out.println(mapName);
+            //TODO: save!
+            //Persistence.getInstance().set(mapName, map);
+            props.setProperty(mapName, map);
+           
+            try {
+                System.out.println(Main.class.getClassLoader().getResource(MAP_FILE).getPath());
+                //save properties to project root folder
+                props.store(new FileOutputStream(Main.class.getClassLoader().getResource(MAP_FILE).getPath()), null);
+                
+            } catch (IOException ex) {
+               
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+                        
+        }
+        
+    }//GEN-LAST:event_saveButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -305,6 +349,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTable jTable1;
     private javax.swing.JButton loadTable;
     private java.awt.List mapList;
+    private javax.swing.JButton saveButton;
     private java.awt.Button sendButton;
     private java.awt.TextArea textAreaOutput;
     private java.awt.TextField textField1;
