@@ -91,7 +91,6 @@ public class SerialTest implements SerialPortEventListener {
 			// open the streams
 			input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 			output = serialPort.getOutputStream();
-
 					
 			// add event listeners
 			serialPort.addEventListener(this);

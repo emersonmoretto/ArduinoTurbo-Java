@@ -4,6 +4,8 @@
  */
 package br.eng.moretto.arduinoturbo;
 
+import br.eng.moretto.arduinoturbo.ui.CellRenderer;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,6 +16,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.TableModel;
 import sun.util.ResourceBundleEnumeration;
 
@@ -28,14 +31,30 @@ public class Main extends javax.swing.JFrame {
     Properties props = new Properties();
        
     static final String MAP_FILE = "map01.properties";
+    
+    
+    int mapWidth = 15;
+    int mapHeight = 15;
+    int maxRPM = 7000;
+    
     /**
      * Creates new form Main
      */
     public Main() {
         initComponents();
+                
+        loadMaps();
         
-        try{
-            props.load(Main.class.getClassLoader().getResourceAsStream(MAP_FILE));            
+        createTable();
+        
+    }
+
+    private void loadMaps(){
+        
+        try{            
+            mapList.removeAll();
+            //props.load(Main.class.getClassLoader().getResourceAsStream(MAP_FILE));            
+            props.load(new FileInputStream("/Users/oper/github/local/ArduinoTurbo-Java/Mapper/resources/map01.properties"));
                         
             Enumeration<Object> e = props.keys();
             while(e.hasMoreElements()){
@@ -45,8 +64,30 @@ public class Main extends javax.swing.JFrame {
             e.printStackTrace();
         }
         
+        
     }
-
+    
+    private void createTable(){
+        
+        // Creating table
+        String[] columnNames = new String[mapWidth];
+        Integer[][] data = new Integer[mapWidth][mapHeight];       
+        
+        
+        int factor = 500;//(int) maxRPM / mapWidth;       
+        
+        for(int i=0 ; i < mapWidth ; i++){            
+            columnNames[i] = ""+(i * factor);
+            for(int j=0 ; j < mapHeight ; j++){            
+                data[i][j] = 0;
+            }
+        }
+        
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(data,columnNames));
+        jTable1.setDefaultRenderer(Integer.class, new CellRenderer(true));
+                
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -66,6 +107,9 @@ public class Main extends javax.swing.JFrame {
         loadTable = new javax.swing.JButton();
         mapList = new java.awt.List();
         saveButton = new javax.swing.JButton();
+        disconnectSerialButton = new java.awt.Button();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -75,11 +119,11 @@ public class Main extends javax.swing.JFrame {
         trafficLight1.setLayout(trafficLight1Layout);
         trafficLight1Layout.setHorizontalGroup(
             trafficLight1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 44, Short.MAX_VALUE)
+            .add(0, 26, Short.MAX_VALUE)
         );
         trafficLight1Layout.setVerticalGroup(
             trafficLight1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 123, Short.MAX_VALUE)
+            .add(0, 116, Short.MAX_VALUE)
         );
 
         connectSerialButton.setFont(new java.awt.Font("Lucida Grande", 0, 18)); // NOI18N
@@ -108,33 +152,12 @@ public class Main extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+                {null}
             },
             new String [] {
-                "1000", "2000", "3000", "4000", "5000", "6000", "7000"
+                "Título 1"
             }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
+        ));
         jTable1.setShowGrid(true);
         jScrollPane1.setViewportView(jTable1);
 
@@ -146,12 +169,32 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        saveButton.setText("jButton1");
+        saveButton.setFont(new java.awt.Font("Lucida Grande", 0, 18)); // NOI18N
+        saveButton.setText("Save Map");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
             }
         });
+
+        disconnectSerialButton.setFont(new java.awt.Font("Lucida Grande", 0, 18)); // NOI18N
+        disconnectSerialButton.setForeground(new java.awt.Color(0, 102, 153));
+        disconnectSerialButton.setLabel("Disconnect");
+        disconnectSerialButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectSerialButtonActionPerformed(evt);
+            }
+        });
+
+        jScrollPane2.setBorder(null);
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        jTextArea1.setRows(5);
+        jTextArea1.setText("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15");
+        jScrollPane2.setViewportView(jTextArea1);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -160,50 +203,58 @@ public class Main extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(textAreaOutput, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 655, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(trafficLight1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(saveButton)
                     .add(layout.createSequentialGroup()
                         .add(textField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 410, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sendButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(connectSerialButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE)
-                            .add(textAreaOutput, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(connectSerialButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(disconnectSerialButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 826, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(trafficLight1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(loadTable)
-                                    .add(mapList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(62, 62, 62)))))
-                .addContainerGap(0, Short.MAX_VALUE))
+                            .add(loadTable)
+                            .add(mapList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(connectSerialButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(connectSerialButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(disconnectSerialButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(mapList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 307, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(mapList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(loadTable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 365, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 365, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 345, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(saveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(saveButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 23, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(sendButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE)
                     .add(textField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(textAreaOutput, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 184, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(trafficLight1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(trafficLight1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
+
+        disconnectSerialButton.getAccessibleContext().setAccessibleName("Disconnect");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -212,6 +263,7 @@ public class Main extends javax.swing.JFrame {
 
         serial = new SerialTest(textAreaOutput);
         serial.initialize();
+        /*
         Thread t=new Thread() {
                 public void run() {
                         //the following line will keep this app alive for 1000 seconds,
@@ -220,6 +272,7 @@ public class Main extends javax.swing.JFrame {
                 }
         };
         t.start();
+        */
         trafficLight1.setRedOn(false);
         trafficLight1.setGreenOn(true);
         System.out.println("Started");
@@ -232,13 +285,14 @@ public class Main extends javax.swing.JFrame {
         
         TableModel model = jTable1.getModel();
         StringBuilder result = new StringBuilder();
-        result.append("m");
-        for(int i=0 ; i < 3 ; i++){
 
-            for(int j=0 ; j < 3 ; j++){
+        
+        for(int i=0 ; i < mapWidth ; i++){
+
+            for(int j=0 ; j < mapHeight ; j++){
                 result.append(model.getValueAt(i, j));
                 
-                if(j != 2) result.append(",");                
+                if(j != mapHeight) result.append(",");                
             }
             result.append(";");
         }
@@ -248,7 +302,7 @@ public class Main extends javax.swing.JFrame {
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
 
         //textField1.setText(result.toString());
-        serial.write(buildStringMap());
+        serial.write("m"+buildStringMap());
         
     }//GEN-LAST:event_sendButtonActionPerformed
 
@@ -258,6 +312,7 @@ public class Main extends javax.swing.JFrame {
 
     private void loadTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadTableActionPerformed
 
+        createTable();
         
         if(mapList.getSelectedIndex() >= 0){
         
@@ -265,9 +320,8 @@ public class Main extends javax.swing.JFrame {
 
             String[] rows = props.getProperty(mapList.getSelectedItem()).split(";");
 
-            for(int i=0 ; i < 3 ; i++){
-
-                for(int j=0 ; j < 3 ; j++){
+            for(int i=0 ; i < mapWidth ; i++){
+                for(int j=0 ; j < mapHeight ; j++){
                     model.setValueAt(Integer.parseInt(rows[i].split(",")[j]), i, j);
                 }
             }
@@ -291,7 +345,11 @@ public class Main extends javax.swing.JFrame {
             try {
                 System.out.println(Main.class.getClassLoader().getResource(MAP_FILE).getPath());
                 //save properties to project root folder
-                props.store(new FileOutputStream(Main.class.getClassLoader().getResource(MAP_FILE).getPath()), null);
+                //props.store(new FileOutputStream(Main.class.getClassLoader().getResource(MAP_FILE).getPath()), null);
+                props.store(new FileOutputStream("/Users/oper/github/local/ArduinoTurbo-Java/Mapper/resources/map01.properties"),null);
+                
+                        
+                loadMaps();
                 
             } catch (IOException ex) {
                
@@ -301,6 +359,15 @@ public class Main extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void disconnectSerialButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectSerialButtonActionPerformed
+        
+        serial.close();
+        
+        trafficLight1.setRedOn(true);
+        trafficLight1.setGreenOn(false);        
+        
+    }//GEN-LAST:event_disconnectSerialButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -345,8 +412,11 @@ public class Main extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button connectSerialButton;
+    private java.awt.Button disconnectSerialButton;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JButton loadTable;
     private java.awt.List mapList;
     private javax.swing.JButton saveButton;
